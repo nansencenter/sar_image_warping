@@ -1,5 +1,5 @@
 # Efficient algorithm fow warping SAR imagery with motion compensation
-## Anton Korosov$^1$, Anna Telegina$^2$
+## Anton Korosov<sup>1</sup>, Anna Telegina<sup>2</sup>
 ### 1. Nansen Environmenatl and Remote Sensing Centre, Bergen, Norway
 ### 2. Norwegian Arctic University, Tromso, Norway
 ---------
@@ -17,21 +17,21 @@ Co-registration is performed by warping of one or both images from their origina
 
 If we denote the brightness of the pixels of the first SAR image by $\mathbf{I_1}$ then the brightness of the warped image can be comuted as:
 
-$ \mathbf{I_w} = \mathcal{M_I} (\mathbf{I_1}, \mathbf{R_w}, \mathbf{C_w}) $.
+$\mathbf{I_w} = \mathcal{M_I} (\mathbf{I_1}, \mathbf{R_w}, \mathbf{C_w})$.
 
 $\mathcal{M_I}$ is the operation of resampling from the original coordinates of $\mathbf{I_0}$ to the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$. The resampling is performed using function `map_coordinates` from the Python library `scipy` with nearest neigbour inteporlation. The original coordinates used are the row and column coordinates of all pixels of the image $\mathbf{I_0}$, and the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$ are the row and column coordinates of all pixels on the warped image. Note that bold roman is used to denote $\mathbf{R_w}$ and $\mathbf{C_w}$ as matrices with the size of $\mathbf{I_w}$. These are computed as:
 
-$ \mathbf{R_w} = \mathcal{M_R} (\mathbf{R_2}, \mathbf{C_2}) $
+$\mathbf{R_w} = \mathcal{M_R} (\mathbf{R_2}, \mathbf{C_2})$
 
-$ \mathbf{C_w} = \mathcal{M_C} (\mathbf{R_2}, \mathbf{C_2}) $
+$\mathbf{C_w} = \mathcal{M_C} (\mathbf{R_2}, \mathbf{C_2})$
 
 $\mathcal{M_R}$ and $\mathcal{M_C}$ are linear interpolators. They are applied to full size matrices of row/column coordinates of the second image, $\mathbf{R_2}$ and $\mathbf{C_2}$. 
 
 The interpolators are trained unsing the function `LinearNDInterpolator` from the Python library `scipy` as follows:
 
-$ \mathcal{M_R} = \mathcal{T} (r_2, c_2, r_1) $
+$\mathcal{M_R} = \mathcal{T} (r_2, c_2, r_1)$
 
-$ \mathcal{M_C} = \mathcal{T} (r_2, c_2, c_1) $
+$\mathcal{M_C} = \mathcal{T} (r_2, c_2, c_1)$
 
 Training $\mathcal{T}$ is performed on vectors of row and column coordinates on the first and the second SAR images: ($r_1$, $c_1$) and ($r_2$, $c_2$) (which usually have much smaller size than the full size matrices).
 
@@ -187,7 +187,7 @@ plt.show()
 
 
     
-![png](warping_files/warping_4_0.png)
+![png](README_files/README_4_0.png)
     
 
 
@@ -218,13 +218,13 @@ axs[1].pcolormesh(x, y, rpm*hpm, clim=[0,15])
 
 
 
-    <matplotlib.collections.QuadMesh at 0x7f8a88a1e290>
+    <matplotlib.collections.QuadMesh at 0x7f05e7bbe290>
 
 
 
 
     
-![png](warping_files/warping_6_1.png)
+![png](README_files/README_6_1.png)
     
 
 
@@ -243,7 +243,7 @@ plt.show()
 
 
     
-![png](warping_files/warping_7_0.png)
+![png](README_files/README_7_0.png)
     
 
 
@@ -266,7 +266,7 @@ plt.show()
 
 
     
-![png](warping_files/warping_8_0.png)
+![png](README_files/README_8_0.png)
     
 
 
@@ -301,7 +301,7 @@ plt.show()
 
 
     
-![png](warping_files/warping_10_0.png)
+![png](README_files/README_10_0.png)
     
 
 
@@ -322,7 +322,7 @@ plt.show()
 
 
     
-![png](warping_files/warping_12_0.png)
+![png](README_files/README_12_0.png)
     
 
 
