@@ -19,7 +19,7 @@ If we denote the brightness of the pixels of the first SAR image by $\mathbf{I_1
 
 $\mathbf{I_w} = \mathcal{M_I} (\mathbf{I_1}, \mathbf{R_w}, \mathbf{C_w})$.            (1)
 
-$\mathcal{M_I}$ is the operation of resampling from the original coordinates of $\mathbf{I_0}$ to the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$. The resampling is performed using function `map_coordinates` from the Python library `scipy` with nearest neigbour inteporlation. The original coordinates used are the row and column coordinates of all pixels of the image $\mathbf{I_0}$, and the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$ are the row and column coordinates of all pixels on the warped image. Note that bold roman is used to denote $\mathbf{R_w}$ and $\mathbf{C_w}$ as matrices with the size of $\mathbf{I_w}$. These are computed as:
+$\mathcal{M_I}$ is the operation of resampling from the original coordinates of $\mathbf{I_1}$ to the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$. The resampling is performed using function `map_coordinates` from the Python library `scipy` with nearest neigbour inteporlation. The original coordinates used are the row and column coordinates of all pixels of the image $\mathbf{I_1}$, and the new coordinates $\mathbf{R_w}$ and $\mathbf{C_w}$ are the row and column coordinates of all pixels on the warped image. Note that bold roman is used to denote $\mathbf{R_w}$ and $\mathbf{C_w}$ as matrices with the size of $\mathbf{I_w}$. These are computed as:
 
 $\mathbf{R_w} = \mathcal{M_R} (\mathbf{R_2}, \mathbf{C_2})$            (2)
 
@@ -71,8 +71,8 @@ The algorithm for image warping with motion compensation can be formulated as fo
 
 The new method is realised as Python code below. Examples of code application are provided on real SAR data from Sentinel-1.
 
-
 ```python
+from cartopy import crs, feature
 import matplotlib.pyplot as plt
 from nansat import Nansat, Domain, NSR
 import numpy as np
@@ -174,8 +174,8 @@ n2 = get_n(f2, bandName='sigma0_HH', remove_spatial_mean=True)
 
 ```python
 # example model domain
-mod_srs = NSR('+proj=stere +lon_0=-45 +lat_0=85')
-mod_dom = Domain(mod_srs, '-te -400000 -400000 400000 400000 -tr 5000 5000')
+mod_srs = NSR('+proj=stere +lon_0=-45 +lat_0=90')
+mod_dom = Domain(mod_srs, '-te -200000 -1000000 400000 -300000 -tr 5000 5000')
 
 # show model domain and SAR image domains
 fig, axs = plt.subplots(1,1,figsize=(5,5))
@@ -187,7 +187,7 @@ plt.show()
 
 
     
-![png](README_files/README_4_0.png)
+![png](README_files/README_5_0.png)
     
 
 
@@ -200,7 +200,7 @@ lon1pm, lat1pm = mod_dom.get_geolocation_grids()
 upm, vpm, apm, rpm, hpm, lon2pm, lat2pm = pattern_matching(lon1pm, lat1pm, n1, c1, r1, n2, c2, r2, srs=mod_srs)
 ```
 
-    85% 01257.0 03374.2 0000nan 0000nan +0nan 0nan 0nan
+    80% 01101.0 02770.4 0000nan 0000nan +0nan 0nan 0nan
      Pattern matching - OK! (  5 sec)
 
 
@@ -218,13 +218,13 @@ axs[1].pcolormesh(x, y, rpm*hpm, clim=[0,15])
 
 
 
-    <matplotlib.collections.QuadMesh at 0x7f1a9f455b70>
+    <matplotlib.collections.QuadMesh at 0x7fcc8f65a0e0>
 
 
 
 
     
-![png](README_files/README_6_1.png)
+![png](README_files/README_7_1.png)
     
 
 
@@ -232,8 +232,8 @@ axs[1].pcolormesh(x, y, rpm*hpm, clim=[0,15])
 ```python
 # create example model drift
 ccc, rrr = np.meshgrid(np.arange(mod_dom.shape()[0]), np.arange(mod_dom.shape()[1]), indexing='ij')
-umo = (ccc - ccc.mean()) * 3000
-vmo = (rrr - rrr.mean()) * 3000
+umo = (ccc - ccc.mean()) * 1000
+vmo = (rrr - rrr.mean()) * 1000
 
 fig, axs = plt.subplots(1,1,figsize=(5,5))
 stp = 10
@@ -243,7 +243,7 @@ plt.show()
 
 
     
-![png](README_files/README_7_0.png)
+![png](README_files/README_8_0.png)
     
 
 
@@ -256,8 +256,12 @@ plt.show()
 # 3. SAR_2 is warped without drift compensation
 
 # Define destination domain
-dst_srs = NSR('+proj=stere +lon_0=-40 +lat_0=84.5')
-dst_dom = Domain(dst_srs, '-te -450000 -450000 450000 450000 -tr 1000 1000')
+dst_srs = NSR('+proj=stere +lon_0=-45 +lat_0=90')
+dst_dom = Domain(mod_srs, '-te -300000 -1100000 500000 -200000 -tr 1000 1000')
+
+x_grd, y_grd = dst_dom.get_geolocation_grids(dst_srs=dst_srs)
+extent=[x_grd.min(), x_grd.max(), y_grd.min(), y_grd.max()]
+
 plt.plot(*dst_dom.get_border(), '.-')
 plt.plot(*n1.get_border(), '.-')
 plt.plot(*n2.get_border(), '.-')
@@ -266,7 +270,7 @@ plt.show()
 
 
     
-![png](README_files/README_8_0.png)
+![png](README_files/README_9_0.png)
     
 
 
@@ -281,6 +285,9 @@ s1_dst_dom_S = warp_with_uv(n1, n1[1], mod_dom, upm, vpm, mask_pm, dst_dom)
 mask_mo = np.zeros(umo.shape, bool) # mask nothing
 s1_dst_dom_M = warp_with_uv(n1, n1[1], mod_dom, umo, vmo, mask_mo, dst_dom)
 
+# Warp SAR1
+s1_dst_dom = warp(n1, n1[1], dst_dom)
+
 # Warp SAR2
 s2_dst_dom = warp(n2, n2[1], dst_dom)
 ```
@@ -290,18 +297,24 @@ s2_dst_dom = warp(n2, n2[1], dst_dom)
 kwargs = dict(
     cmap='gray',
     clim=[0, 255],
+    extent=extent,
+    zorder=0,
 )
 
-fig, axs = plt.subplots(1,3, figsize=(15,5))
-axs[0].imshow(s1_dst_dom_S, **kwargs)
-axs[1].imshow(s1_dst_dom_M, **kwargs)
-axs[2].imshow(s2_dst_dom, **kwargs)
+fig, axs = plt.subplots(1,4, figsize=(20,5), subplot_kw={'projection': crs.NorthPolarStereo(central_longitude=-45)})
+axs[0].imshow(s1_dst_dom, **kwargs)
+axs[1].imshow(s2_dst_dom, **kwargs)
+axs[2].imshow(s1_dst_dom_S, **kwargs)
+axs[3].imshow(s1_dst_dom_M, **kwargs)
+
+for ax in axs:
+    ax.add_feature(feature.LAND, zorder=1)
 plt.show()
 ```
 
 
     
-![png](README_files/README_10_0.png)
+![png](README_files/README_11_0.png)
     
 
 
@@ -322,7 +335,7 @@ plt.show()
 
 
     
-![png](README_files/README_12_0.png)
+![png](README_files/README_13_0.png)
     
 
 
